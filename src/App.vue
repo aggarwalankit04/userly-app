@@ -1,34 +1,25 @@
 <template>
   <div class="container">
     <h2 class="text-center mt-5 mb-5">USERLY APPLICATION</h2>
-    <ColorForm @setBackgroundColor="setBackgroundColor"></ColorForm>
+    <color-form @setBackgroundColor="setBackgroundColor"></color-form>
     <div class="row userDisplay">
-      <div class="col-1 col-sm-1 col-md-1 col-lg-1 arrow-left">
-        <i
-          class="fa-solid fa-arrow-left"
-          :class="{ disabled: isDisabledLeft }"
-          @click="prevClick"
-        ></i>
-      </div>
-
-      <div
+      <arrow-buttons
+        :disabled="isDisabledLeft"
+        :flag="false"
+        @clickHandler="clickHandler"
+      ></arrow-buttons>
+      <user-cards
         class="col-10 col-sm-5 col-md-5 col-lg-3"
         v-for="randomuser in randomuserData"
         :key="randomuser.id.value"
-      >
-        <user-cards
-          :randomuser="randomuser"
-          :colorChoiced="colorChoiced"
-        ></user-cards>
-      </div>
-
-      <div class="col-1 col-sm-1 col-md-1 col-lg-1 arrow-right">
-        <i
-          class="fa-solid fa-arrow-right"
-          :class="{ disabled: isDisabledRight }"
-          @click="nextClick"
-        ></i>
-      </div>
+        :randomuser="randomuser"
+        :colorChoiced="colorChoiced"
+      ></user-cards>
+      <arrow-buttons
+        :disabled="isDisabledRight"
+        :flag="true"
+        @clickHandler="clickHandler"
+      ></arrow-buttons>
     </div>
   </div>
 </template>
@@ -36,12 +27,14 @@
 import axios from "axios";
 import ColorForm from "./components/Colorform.vue";
 import UserCards from "./components/UserCards.vue";
+import arrowButtons from "./components/arrowButtons.vue";
 
 export default {
   name: "App",
   components: {
     ColorForm,
     UserCards,
+    arrowButtons,
   },
   data() {
     return {
@@ -72,13 +65,7 @@ export default {
   },
   methods: {
     setBackgroundColor(event) {
-      console.log(event);
-      if (!event) {
-        alert("Select Any color");
-        return;
-      }
       this.colorChoiced = event;
-      localStorage.setItem("colorChoice", this.colorChoiced);
     },
     randomuserDataFormation(windowwidth) {
       this.randomuserData = this.userArrayTotal.slice(0, windowwidth);
@@ -89,80 +76,43 @@ export default {
       this.randomuserData = [];
       if (this.windowWidth < 992 && this.windowWidth > 576) {
         this.randomBucketSize = 2;
-        this.randomuserDataFormation(this.randomBucketSize);
       } else if (this.windowWidth < 576) {
         this.randomBucketSize = 1;
-        this.randomuserDataFormation(this.randomBucketSize);
       } else {
         this.randomBucketSize = 3;
-        this.randomuserDataFormation(this.randomBucketSize);
       }
+
+      this.randomuserDataFormation(this.randomBucketSize);
     },
-    prevClick() {
+    clickHandler(flag) {
       this.randomuserData = [];
-      this.iteratornext = this.iteratorprev;
-      this.iteratorprev = this.iteratorprev - this.randomBucketSize;
-      this.randomuserData = this.userArrayTotal.slice(
-        this.iteratorprev,
-        this.iteratornext
-      );
-      if (this.iteratorprev == 0) {
-        this.isDisabledRight = false;
-        this.isDisabledLeft = true;
-      }
-    },
-    nextClick() {
-      this.randomuserData = [];
-      this.iteratorprev = this.iteratornext;
+      this.iteratorprev =
+        flag == true
+          ? this.iteratornext
+          : this.iteratorprev - this.randomBucketSize;
       this.iteratornext = this.iteratorprev + this.randomBucketSize;
+
       this.randomuserData = this.userArrayTotal.slice(
         this.iteratorprev,
         this.iteratornext
       );
 
-      if (this.userArrayTotal.length <= this.iteratornext) {
+      if (flag == true && this.userArrayTotal.length <= this.iteratornext) {
         this.isDisabledRight = true;
-      } else if (this.iteratorprev > 0) {
+      } else if (flag == true && this.iteratorprev > 0) {
         this.isDisabledLeft = false;
+      } else if (this.iteratorprev == 0) {
+        this.isDisabledRight = false;
+        this.isDisabledLeft = true;
       }
     },
   },
 };
 </script>
 
-<style scoped>
-i {
-  margin-right: 10px;
-}
-
-.arrow-left {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.arrow-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
+<style scopped>
 .userDisplay {
   display: flex;
   justify-content: space-between;
-}
-.card-subtitle {
-  font-size: 12px;
-}
-.card {
-  min-height: 300px;
-}
-.user-form {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-}
-.disabled {
-  display: none;
 }
 </style>

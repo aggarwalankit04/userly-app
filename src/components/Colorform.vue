@@ -17,13 +17,28 @@ export default {
   name: "ColorForm",
   data() {
     return {
-      colorChoiced: "",
+      colorChoiced:
+        localStorage.getItem("colorChoice") != ""
+          ? localStorage.getItem("colorChoice")
+          : "",
     };
   },
   methods: {
     changeBackgroundColor() {
+      if (!this.colorChoiced) {
+        alert("Select Any color");
+        return;
+      }
+      localStorage.setItem("colorChoice", this.colorChoiced);
       this.$emit("setBackgroundColor", this.colorChoiced);
     },
   },
 };
 </script>
+<style scoped>
+.user-form {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+</style>
